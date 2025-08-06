@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: notificaciones
-  namespace: distribuidas
+  name: billing
+  namespace: distribuidas-conjunta
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: notificaciones
+      app: billing
   template:
     metadata:
       labels:
-        app: notificaciones
+        app: billing
     spec:
       containers:
-        - name: notificaciones
-          image: notificaciones:latest
+        - name: billing
+          image: billing:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
@@ -28,7 +28,7 @@ spec:
                   name: eureka-config
                   key: EUREKA_URL
             - name: DATABASE_URL
-              value: "jdbc:postgresql://cockroachdb-service.distribuidas.svc.cluster.local:26257/db-notifications?user=root&password="
+              value: "jdbc:postgresql://cockroachdb-service.distribuidas.svc.cluster.local:26257/db-catalog?user=root&password="
             - name: DATABASE_USERNAME
               valueFrom:
                 configMapKeyRef:
@@ -59,8 +59,6 @@ spec:
                 configMapKeyRef:
                   name: rabbitmq-config
                   key: RABBITMQ_PASSWORD
-            - name: INTERVAL_RELOJ
-              value: "10"
           readinessProbe:
             httpGet:
               path: /actuator/health
