@@ -2,13 +2,9 @@
 set -euo pipefail
 
 SERVICES=(
-  "AuthService"
-  "ms-api-gateway"
-  "ms-catalogo"
-  "ms-eureka-server"
-  "ms-publish"
-  "notificaciones"
-  "sync"
+  "billing"
+  "central"
+  "inventory"
 )
 
 echo "Compilando imágenes Docker multi-stage..."

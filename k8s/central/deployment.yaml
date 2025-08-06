@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: billing
+  name: central
   namespace: distribuidas-conjunta
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: billing
+      app: central
   template:
     metadata:
       labels:
-        app: billing
+        app: central
     spec:
       containers:
-        - name: billing
-          image: billing:latest
+        - name: central
+          image: central:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080

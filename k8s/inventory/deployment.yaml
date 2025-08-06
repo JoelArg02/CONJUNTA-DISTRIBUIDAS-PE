@@ -1,32 +1,28 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: billing
+  name: inventory
   namespace: distribuidas-conjunta
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: billing
+      app: inventory
   template:
     metadata:
       labels:
-        app: billing
+        app: inventory
     spec:
       containers:
-        - name: billing
-          image: billing:latest
+        - name: inventory
+          image: inventory:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
           env:
             - name: SERVER_PORT
               value: "8080"
-            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
-              valueFrom:
-                configMapKeyRef:
-                  name: eureka-config
-                  key: EUREKA_URL
+
             - name: DATABASE_URL
               value: "jdbc:postgresql://cockroachdb-service.distribuidas.svc.cluster.local:26257/db-catalog?user=root&password="
             - name: DATABASE_USERNAME

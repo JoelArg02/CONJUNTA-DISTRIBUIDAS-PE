@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: cockroachdb-config
-  namespace: distribuidas
+  namespace: distribuidas-conjunta
 data:
   COCKROACH_HOST: "cockroachdb-service.distribuidas.svc.cluster.local"
   COCKROACH_PORT: "26257"
