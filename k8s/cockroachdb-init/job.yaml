@@ -1,0 +1,37 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: cockroachdb-init
+  namespace: distribuidas
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: cockroachdb-init
+          image: cockroachdb/cockroach:latest
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              echo "Waiting for CockroachDB to be ready..."
+              sleep 30
+              echo "Creating databases..."
+              cockroach sql --insecure --host=cockroachdb-service --execute="CREATE DATABASE IF NOT EXISTS \"ms-publish\";"
+              cockroach sql --insecure --host=cockroachdb-service --execute="CREATE DATABASE IF NOT EXISTS \"db-catalog\";"
+              cockroach sql --insecure --host=cockroachdb-service --execute="CREATE DATABASE IF NOT EXISTS \"db-notifications\";"
+              cockroach sql --insecure --host=cockroachdb-service --execute="CREATE DATABASE IF NOT EXISTS \"db-auth\";"
+              echo "Databases created successfully!"
+      initContainers:
+        - name: wait-for-cockroach
+          image: busybox:1.35
+          command:
+            - sh
+            - -c
+            - |
+              until nc -z cockroachdb-service 26257; do
+                echo "Waiting for CockroachDB to be ready..."
+                sleep 5
+              done
+              echo "CockroachDB is ready!"

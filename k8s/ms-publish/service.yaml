@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ms-publish
+  namespace: distribuidas
+spec:
+  type: ClusterIP
+  selector:
+    app: ms-publish
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080

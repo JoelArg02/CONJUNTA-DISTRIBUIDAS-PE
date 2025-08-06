@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cockroachdb-config
+  namespace: distribuidas
+data:
+  COCKROACH_HOST: "cockroachdb-service.distribuidas.svc.cluster.local"
+  COCKROACH_PORT: "26257"
+  COCKROACH_USER: "root"
+  COCKROACH_PASSWORD: ""
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rabbitmq-config
+  namespace: distribuidas
+data:
+  RABBITMQ_HOST: "rabbitmq-service.distribuidas.svc.cluster.local"
+  RABBITMQ_PORT: "5672"
+  RABBITMQ_USERNAME: "admin"
+  RABBITMQ_PASSWORD: "admin"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: eureka-config
+  namespace: distribuidas
+data:
+  EUREKA_URL: "http://eureka-server.distribuidas.svc.cluster.local:8761/eureka"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: jwt-secret
+  namespace: distribuidas
+type: Opaque
+data:
+  jwt-secret: dW5hX2NsYXZlX211eV9zZWd1cmFfMTIzNDU2Nzg5MDEyMzQ1Ng== # una_clave_muy_segura_1234567890123456
