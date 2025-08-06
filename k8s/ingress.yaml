@@ -11,31 +11,31 @@ spec:
     - host: distribuidas.local
       http:
         paths:
-          - path: /
+          - path: /billing
             pathType: Prefix
             backend:
               service:
-                name: api-gateway
+                name: billing
+                port:
+                  number: 8080
+          - path: /central
+            pathType: Prefix
+            backend:
+              service:
+                name: central
                 port:
                   number: 8000
-          - path: /eureka
+          - path: /inventory
             pathType: Prefix
             backend:
               service:
-                name: eureka-server
+                name: inventory
                 port:
-                  number: 8761
+                  number: 8082
           - path: /rabbitmq
             pathType: Prefix
             backend:
               service:
-                name: rabbitmq-nodeport
+                name: rabbitmq-service
                 port:
                   number: 15672
-          - path: /cockroach
-            pathType: Prefix
-            backend:
-              service:
-                name: cockroachdb-nodeport
-                port:
-                  number: 8080

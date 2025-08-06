@@ -18,7 +18,7 @@ WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 
 # Exponer puerto
-EXPOSE 8761
+EXPOSE 8082
 
 # Configurar JVM para contenedor
 ENTRYPOINT ["java", "-XX:+UseContainerSupport", "-XX:MaxRAMPercentage=75.0", "-jar", "/app/app.jar"]

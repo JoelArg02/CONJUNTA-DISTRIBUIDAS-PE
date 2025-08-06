@@ -13,6 +13,19 @@ spec:
       labels:
         app: billing
     spec:
+      initContainers:
+        - name: wait-for-postgresql
+          image: busybox:1.35
+          command:
+            - sh
+            - -c
+            - until nc -z postgresql-service.distribuidas-conjunta.svc.cluster.local 5432; do sleep 5; done
+        - name: wait-for-rabbitmq
+          image: busybox:1.35
+          command:
+            - sh
+            - -c
+            - until nc -z rabbitmq-service.distribuidas-conjunta.svc.cluster.local 5672; do sleep 5; done
       containers:
         - name: billing
           image: billing:latest
@@ -22,52 +35,55 @@ spec:
           env:
             - name: SERVER_PORT
               value: "8080"
-            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:postgresql://postgresql-service.distribuidas-conjunta.svc.cluster.local:5432/billing_db"
+            - name: SPRING_DATASOURCE_USERNAME
               valueFrom:
                 configMapKeyRef:
-                  name: eureka-config
-                  key: EUREKA_URL
-            - name: DATABASE_URL
-              value: "jdbc:postgresql://cockroachdb-service.distribuidas.svc.cluster.local:26257/db-catalog?user=root&password="
-            - name: DATABASE_USERNAME
+                  name: postgresql-config
+                  key: POSTGRES_USER
+            - name: SPRING_DATASOURCE_PASSWORD
               valueFrom:
-                configMapKeyRef:
-                  name: cockroachdb-config
-                  key: COCKROACH_USER
-            - name: DATABASE_PASSWORD
-              valueFrom:
-                configMapKeyRef:
-                  name: cockroachdb-config
-                  key: COCKROACH_PASSWORD
-            - name: RABBITMQ_HOST
+                secretKeyRef:
+                  name: postgresql-secret
+                  key: POSTGRES_PASSWORD
+            - name: SPRING_RABBITMQ_HOST
               valueFrom:
                 configMapKeyRef:
                   name: rabbitmq-config
                   key: RABBITMQ_HOST
-            - name: RABBITMQ_PORT
+            - name: SPRING_RABBITMQ_PORT
               valueFrom:
                 configMapKeyRef:
                   name: rabbitmq-config
                   key: RABBITMQ_PORT
-            - name: RABBITMQ_USERNAME
+            - name: SPRING_RABBITMQ_USERNAME
               valueFrom:
                 configMapKeyRef:
                   name: rabbitmq-config
                   key: RABBITMQ_USERNAME
-            - name: RABBITMQ_PASSWORD
+            - name: SPRING_RABBITMQ_PASSWORD
               valueFrom:
-                configMapKeyRef:
-                  name: rabbitmq-config
+                secretKeyRef:
+                  name: rabbitmq-secret
                   key: RABBITMQ_PASSWORD
+            - name: JPA_HIBERNATE_DDL_AUTO
+              value: "update"
+            - name: HIBERNATE_SHOW_SQL
+              value: "true"
+            - name: HIBERNATE_FORMAT_SQL
+              value: "true"
+            - name: HIBERNATE_USE_SQL_COMMENTS
+              value: "true"
           readinessProbe:
             httpGet:
               path: /actuator/health
               port: 8080
-            initialDelaySeconds: 45
+            initialDelaySeconds: 60
             periodSeconds: 10
           livenessProbe:
             httpGet:
               path: /actuator/health
               port: 8080
-            initialDelaySeconds: 90
+            initialDelaySeconds: 120
             periodSeconds: 15

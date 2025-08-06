@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgresql
+  namespace: distribuidas-conjunta
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgresql
+  template:
+    metadata:
+      labels:
+        app: postgresql
+    spec:
+      containers:
+        - name: postgresql
+          image: postgres:15
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: postgresql-config
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-secret
+                  key: POSTGRES_PASSWORD
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name: postgresql-data
+              mountPath: /var/lib/postgresql/data
+            - name: postgresql-init
+              mountPath: /docker-entrypoint-initdb.d
+          readinessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - postgres
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - postgres
+            initialDelaySeconds: 30
+            periodSeconds: 10
+      volumes:
+        - name: postgresql-data
+          persistentVolumeClaim:
+            claimName: postgresql-pvc
+        - name: postgresql-init
+          configMap:
+            name: postgresql-init-scripts
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgresql-pvc
+  namespace: distribuidas-conjunta
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgresql-service
+  namespace: distribuidas-conjunta
+spec:
+  type: ClusterIP
+  selector:
+    app: postgresql
+  ports:
+    - name: postgresql
+      port: 5432
+      targetPort: 5432

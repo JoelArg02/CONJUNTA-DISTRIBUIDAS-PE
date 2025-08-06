@@ -3,7 +3,7 @@
 # Script completo para construir imágenes y desplegar en Kubernetes
 set -e
 
-echo "🚀 INICIANDO PROCESO COMPLETO DE BUILD Y DEPLOY"
+echo "INICIANDO PROCESO COMPLETO DE BUILD Y DEPLOY"
 echo "=============================================="
 
 # Función para mostrar ayuda

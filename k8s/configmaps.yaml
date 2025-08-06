@@ -1,38 +1,83 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: cockroachdb-config
+  name: postgresql-config
   namespace: distribuidas-conjunta
 data:
-  COCKROACH_HOST: "cockroachdb-service.distribuidas.svc.cluster.local"
-  COCKROACH_PORT: "26257"
-  COCKROACH_USER: "root"
-  COCKROACH_PASSWORD: ""
+  POSTGRES_USER: "postgres"
+  POSTGRES_HOST: "postgresql-service.distribuidas-conjunta.svc.cluster.local"
+  POSTGRES_PORT: "5432"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-config
+  namespace: distribuidas-conjunta
+data:
+  MYSQL_DATABASE: "inventory_db"
+  MYSQL_USER: "root"
+  MYSQL_HOST: "mysql-service.distribuidas-conjunta.svc.cluster.local"
+  MYSQL_PORT: "3306"
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: rabbitmq-config
-  namespace: distribuidas
+  namespace: distribuidas-conjunta
 data:
-  RABBITMQ_HOST: "rabbitmq-service.distribuidas.svc.cluster.local"
+  RABBITMQ_HOST: "rabbitmq-service.distribuidas-conjunta.svc.cluster.local"
   RABBITMQ_PORT: "5672"
   RABBITMQ_USERNAME: "admin"
-  RABBITMQ_PASSWORD: "admin"
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: eureka-config
-  namespace: distribuidas
+  name: postgresql-init-scripts
+  namespace: distribuidas-conjunta
 data:
-  EUREKA_URL: "http://eureka-server.distribuidas.svc.cluster.local:8761/eureka"
+  init.sql: |
+    CREATE DATABASE IF NOT EXISTS billing_db;
+    CREATE DATABASE IF NOT EXISTS central_db;
+    
+    -- Grant permissions
+    GRANT ALL PRIVILEGES ON DATABASE billing_db TO postgres;
+    GRANT ALL PRIVILEGES ON DATABASE central_db TO postgres;
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-init-scripts
+  namespace: distribuidas-conjunta
+data:
+  init.sql: |
+    CREATE DATABASE IF NOT EXISTS inventory_db;
+    GRANT ALL PRIVILEGES ON inventory_db.* TO 'root'@'%';
+    FLUSH PRIVILEGES;
 ---
 apiVersion: v1
 kind: Secret
 metadata:
-  name: jwt-secret
-  namespace: distribuidas
+  name: postgresql-secret
+  namespace: distribuidas-conjunta
 type: Opaque
 data:
-  jwt-secret: dW5hX2NsYXZlX211eV9zZWd1cmFfMTIzNDU2Nzg5MDEyMzQ1Ng== # una_clave_muy_segura_1234567890123456
+  POSTGRES_PASSWORD: cm9vdHBhc3N3b3Jk # rootpassword
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysql-secret
+  namespace: distribuidas-conjunta
+type: Opaque
+data:
+  MYSQL_ROOT_PASSWORD: cm9vdA== # root
+  MYSQL_PASSWORD: cm9vdA== # root
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: rabbitmq-secret
+  namespace: distribuidas-conjunta
+type: Opaque
+data:
+  RABBITMQ_PASSWORD: cm9vdHBhc3N3b3Jk # rootpassword
