@@ -4,6 +4,7 @@ import com.allpasoft.billing.entity.Invoice;
 import com.allpasoft.billing.repository.InvoiceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -20,7 +21,7 @@ public class InvoiceService {
             "Café Premium", 300.0
     );
 
-    public void generateInvoice(UUID cosechaId, String producto, double toneladas) {
+    public Invoice generarFactura(Long cosechaId, String producto, double toneladas) {
         double precioBase = PRECIOS.getOrDefault(producto, 100.0);
         double monto = toneladas * precioBase;
 
@@ -32,7 +33,18 @@ public class InvoiceService {
 
         invoiceRepository.save(invoice);
 
-        System.out.println("Notify Central API: PUT /cosechas/" + cosechaId +
-                "/estado -> { estado: FACTURADA, factura_id: " + invoice.getId() + " }");
+        return invoice;
     }
+
+    public void notificarCentral(Long cosechaId, Long facturaId) {
+        RestTemplate restTemplate = new RestTemplate();
+        String url = "http://localhost:8000/cosechas/" + cosechaId + "/estado";
+        Map<String, String> body = Map.of(
+                "estado", "FACTURADA",
+                "factura_id", facturaId.toString()
+        );
+        restTemplate.put(url, body);
+        System.out.println("[HTTP] Notificación enviada a Central: " + body);
+    }
+
 }
