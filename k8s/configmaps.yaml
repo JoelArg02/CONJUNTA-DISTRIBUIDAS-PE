@@ -35,41 +35,15 @@ metadata:
   name: postgresql-init-scripts
   namespace: distribuidas-conjunta
 data:
-  01-create-databases.sh: |
-    #!/bin/bash
-    set -e
+  01-init-databases.sql: |
+    -- Script de inicialización para PostgreSQL
+    -- Crear bases de datos para los microservicios
     
-    echo "Creando bases de datos para los microservicios..."
+    -- Crear base de datos billing_db si no existe
+    CREATE DATABASE billing_db;
     
-    # Crear base de datos billing_db si no existe
-    psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
-        DO \$\$
-        BEGIN
-            IF NOT EXISTS (SELECT 1 FROM pg_database WHERE datname = 'billing_db') THEN
-                CREATE DATABASE billing_db;
-                RAISE NOTICE 'Base de datos billing_db creada exitosamente';
-            ELSE
-                RAISE NOTICE 'Base de datos billing_db ya existe';
-            END IF;
-        END
-        \$\$;
-    EOSQL
-    
-    # Crear base de datos central_db si no existe
-    psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
-        DO \$\$
-        BEGIN
-            IF NOT EXISTS (SELECT 1 FROM pg_database WHERE datname = 'central_db') THEN
-                CREATE DATABASE central_db;
-                RAISE NOTICE 'Base de datos central_db creada exitosamente';
-            ELSE
-                RAISE NOTICE 'Base de datos central_db ya existe';
-            END IF;
-        END
-        \$\$;
-    EOSQL
-    
-    echo "✅ Inicialización de PostgreSQL completada"
+    -- Crear base de datos central_db si no existe  
+    CREATE DATABASE central_db;
 ---
 apiVersion: v1
 kind: ConfigMap

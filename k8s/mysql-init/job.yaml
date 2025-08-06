@@ -1,0 +1,41 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: mysql-init-job
+  namespace: distribuidas-conjunta
+spec:
+  template:
+    spec:
+      containers:
+      - name: mysql-init
+        image: mysql:8.0
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: MYSQL_ROOT_PASSWORD
+        - name: MYSQL_HOST
+          value: "mysql-service.distribuidas-conjunta.svc.cluster.local"
+        - name: MYSQL_PORT
+          value: "3306"
+        command:
+        - /bin/bash
+        - -c
+        - |
+          echo "Esperando a que MySQL esté listo..."
+          until mysqladmin ping -h $MYSQL_HOST -P $MYSQL_PORT -u root -p$MYSQL_ROOT_PASSWORD --silent; do
+            echo "MySQL no está listo aún. Esperando..."
+            sleep 2
+          done
+          
+          echo "MySQL está listo. Creando base de datos inventory_db..."
+          
+          mysql -h $MYSQL_HOST -P $MYSQL_PORT -u root -p$MYSQL_ROOT_PASSWORD -e "CREATE DATABASE IF NOT EXISTS inventory_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+          
+          echo "Base de datos creada exitosamente:"
+          mysql -h $MYSQL_HOST -P $MYSQL_PORT -u root -p$MYSQL_ROOT_PASSWORD -e "SHOW DATABASES;"
+          
+          echo "✅ Inicialización de MySQL completada"
+      restartPolicy: OnFailure
+  backoffLimit: 3

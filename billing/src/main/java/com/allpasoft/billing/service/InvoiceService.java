@@ -36,7 +36,7 @@ public class InvoiceService {
 
     public void notificarCentral(Long cosechaId, Long facturaId) {
         RestTemplate restTemplate = new RestTemplate();
-        String url = "http://localhost:8000/cosechas/" + cosechaId + "/estado";
+        String url = "http://central.distribuidas-conjunta.svc.cluster.local:8000cosechas/" + cosechaId + "/estado";
         Map<String, String> body = Map.of(
                 "estado", "FACTURADA",
                 "factura_id", facturaId.toString()

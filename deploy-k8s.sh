@@ -28,6 +28,19 @@ kubectl wait --for=condition=available --timeout=300s deployment/postgresql -n d
 kubectl wait --for=condition=available --timeout=300s deployment/mysql -n distribuidas-conjunta
 kubectl wait --for=condition=available --timeout=300s deployment/rabbitmq -n distribuidas-conjunta
 
+# Ejecutar Jobs de inicialización de bases de datos
+echo "🔧 Ejecutando inicialización de PostgreSQL..."
+kubectl delete job postgresql-init-job -n distribuidas-conjunta --ignore-not-found=true
+kubectl apply -f k8s/postgresql-init/job.yaml
+kubectl wait --for=condition=complete --timeout=180s job/postgresql-init-job -n distribuidas-conjunta
+
+echo "🔧 Ejecutando inicialización de MySQL..."
+kubectl delete job mysql-init-job -n distribuidas-conjunta --ignore-not-found=true
+kubectl apply -f k8s/mysql-init/job.yaml
+kubectl wait --for=condition=complete --timeout=180s job/mysql-init-job -n distribuidas-conjunta
+
+echo "✅ Bases de datos inicializadas correctamente"
+
 # Desplegar servicios de aplicación
 echo "🏗️ Desplegando servicios de aplicación..."
 kubectl apply -f k8s/billing/

@@ -1,0 +1,51 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: postgresql-init-job
+  namespace: distribuidas-conjunta
+spec:
+  template:
+    spec:
+      containers:
+      - name: postgresql-init
+        image: postgres:15
+        env:
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgresql-secret
+              key: POSTGRES_PASSWORD
+        - name: POSTGRES_HOST
+          value: "postgresql-service.distribuidas-conjunta.svc.cluster.local"
+        - name: POSTGRES_PORT
+          value: "5432"
+        - name: POSTGRES_USER
+          value: "postgres"
+        - name: POSTGRES_DB
+          value: "postgres"
+        command:
+        - /bin/bash
+        - -c
+        - |
+          echo "Esperando a que PostgreSQL esté listo..."
+          until pg_isready -h $POSTGRES_HOST -p $POSTGRES_PORT -U $POSTGRES_USER; do
+            echo "PostgreSQL no está listo aún. Esperando..."
+            sleep 2
+          done
+          
+          echo "PostgreSQL está listo. Creando bases de datos..."
+          
+          # Crear base de datos billing_db si no existe
+          psql -h $POSTGRES_HOST -p $POSTGRES_PORT -U $POSTGRES_USER -d $POSTGRES_DB -tc "SELECT 1 FROM pg_database WHERE datname = 'billing_db'" | grep -q 1 || \
+          psql -h $POSTGRES_HOST -p $POSTGRES_PORT -U $POSTGRES_USER -d $POSTGRES_DB -c "CREATE DATABASE billing_db;"
+          
+          # Crear base de datos central_db si no existe
+          psql -h $POSTGRES_HOST -p $POSTGRES_PORT -U $POSTGRES_USER -d $POSTGRES_DB -tc "SELECT 1 FROM pg_database WHERE datname = 'central_db'" | grep -q 1 || \
+          psql -h $POSTGRES_HOST -p $POSTGRES_PORT -U $POSTGRES_USER -d $POSTGRES_DB -c "CREATE DATABASE central_db;"
+          
+          echo "Bases de datos creadas exitosamente:"
+          psql -h $POSTGRES_HOST -p $POSTGRES_PORT -U $POSTGRES_USER -d $POSTGRES_DB -c "\l"
+          
+          echo "✅ Inicialización de PostgreSQL completada"
+      restartPolicy: OnFailure
+  backoffLimit: 3
