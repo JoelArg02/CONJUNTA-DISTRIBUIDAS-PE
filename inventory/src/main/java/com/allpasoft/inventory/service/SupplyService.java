@@ -47,7 +47,7 @@ public class SupplyService {
         // Construir payload del evento
         Map<String, Object> payload = new HashMap<>();
         payload.put("evento", "inventario_ajustado");
-        payload.put("cosecha_id", cosechaId);
+        payload.put("cosecha_id", cosechaId.toString());
         payload.put("insumo", insumo);
         payload.put("cantidad_reducida", cantidad);
         payload.put("status", "OK");

@@ -8,7 +8,6 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.UUID;
 
 @Service
 public class InvoiceService {
@@ -32,7 +31,6 @@ public class InvoiceService {
         invoice.setCreadoEn(LocalDateTime.now());
 
         invoiceRepository.save(invoice);
-
         return invoice;
     }
 
@@ -46,5 +44,4 @@ public class InvoiceService {
         restTemplate.put(url, body);
         System.out.println("[HTTP] Notificación enviada a Central: " + body);
     }
-
 }

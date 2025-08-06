@@ -8,6 +8,7 @@ import com.allpasoft.central.service.HarvestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -38,5 +39,10 @@ public class HarvestController {
         harvest.setEstado(dto.getEstado());
         harvestRepository.save(harvest);
         return "Estado de cosecha actualizado a: " + dto.getEstado();
+    }
+
+    @GetMapping
+    public List<Harvest> getAllHarvests() {
+        return harvestService.getAllHarvests();
     }
 }

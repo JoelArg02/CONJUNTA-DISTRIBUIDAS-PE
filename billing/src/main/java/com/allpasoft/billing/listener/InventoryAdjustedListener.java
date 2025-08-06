@@ -8,8 +8,6 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.UUID;
-
 @Service
 public class InventoryAdjustedListener {
 
@@ -23,18 +21,16 @@ public class InventoryAdjustedListener {
     public void consumeInventarioAjustado(String message) {
         try {
             JsonNode event = objectMapper.readTree(message);
-            Long cosechaId = event.get("cosecha_id").asLong();
 
+            Long cosechaId = event.get("cosecha_id").asLong();
             String producto = event.get("producto").asText();
             double toneladas = event.get("toneladas").asDouble();
 
             Invoice invoice = invoiceService.generarFactura(cosechaId, producto, toneladas);
-
             invoiceService.notificarCentral(cosechaId, invoice.getId());
 
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-
 }
