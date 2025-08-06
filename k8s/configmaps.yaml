@@ -5,6 +5,7 @@ metadata:
   namespace: distribuidas-conjunta
 data:
   POSTGRES_USER: "postgres"
+  POSTGRES_DB: "postgres"
   POSTGRES_HOST: "postgresql-service.distribuidas-conjunta.svc.cluster.local"
   POSTGRES_PORT: "5432"
 ---
@@ -15,7 +16,6 @@ metadata:
   namespace: distribuidas-conjunta
 data:
   MYSQL_DATABASE: "inventory_db"
-  MYSQL_USER: "root"
   MYSQL_HOST: "mysql-service.distribuidas-conjunta.svc.cluster.local"
   MYSQL_PORT: "3306"
 ---
@@ -35,13 +35,41 @@ metadata:
   name: postgresql-init-scripts
   namespace: distribuidas-conjunta
 data:
-  init.sql: |
-    CREATE DATABASE IF NOT EXISTS billing_db;
-    CREATE DATABASE IF NOT EXISTS central_db;
+  01-create-databases.sh: |
+    #!/bin/bash
+    set -e
     
-    -- Grant permissions
-    GRANT ALL PRIVILEGES ON DATABASE billing_db TO postgres;
-    GRANT ALL PRIVILEGES ON DATABASE central_db TO postgres;
+    echo "Creando bases de datos para los microservicios..."
+    
+    # Crear base de datos billing_db si no existe
+    psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
+        DO \$\$
+        BEGIN
+            IF NOT EXISTS (SELECT 1 FROM pg_database WHERE datname = 'billing_db') THEN
+                CREATE DATABASE billing_db;
+                RAISE NOTICE 'Base de datos billing_db creada exitosamente';
+            ELSE
+                RAISE NOTICE 'Base de datos billing_db ya existe';
+            END IF;
+        END
+        \$\$;
+    EOSQL
+    
+    # Crear base de datos central_db si no existe
+    psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
+        DO \$\$
+        BEGIN
+            IF NOT EXISTS (SELECT 1 FROM pg_database WHERE datname = 'central_db') THEN
+                CREATE DATABASE central_db;
+                RAISE NOTICE 'Base de datos central_db creada exitosamente';
+            ELSE
+                RAISE NOTICE 'Base de datos central_db ya existe';
+            END IF;
+        END
+        \$\$;
+    EOSQL
+    
+    echo "✅ Inicialización de PostgreSQL completada"
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -49,10 +77,21 @@ metadata:
   name: mysql-init-scripts
   namespace: distribuidas-conjunta
 data:
-  init.sql: |
-    CREATE DATABASE IF NOT EXISTS inventory_db;
+  01-create-database.sql: |
+    -- Script de inicialización para MySQL
+    -- Crear base de datos para el microservicio inventory
+    
+    CREATE DATABASE IF NOT EXISTS inventory_db
+      CHARACTER SET utf8mb4
+      COLLATE utf8mb4_unicode_ci;
+    
+    -- Asegurar permisos para root
     GRANT ALL PRIVILEGES ON inventory_db.* TO 'root'@'%';
     FLUSH PRIVILEGES;
+    
+    -- Verificar que la base de datos se creó
+    USE inventory_db;
+    SELECT 'Base de datos inventory_db creada exitosamente' AS status;
 ---
 apiVersion: v1
 kind: Secret

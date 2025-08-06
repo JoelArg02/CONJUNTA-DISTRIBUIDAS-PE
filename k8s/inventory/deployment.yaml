@@ -38,10 +38,7 @@ spec:
             - name: SPRING_DATASOURCE_URL
               value: "jdbc:mysql://mysql-service.distribuidas-conjunta.svc.cluster.local:3306/inventory_db?useSSL=false&serverTimezone=UTC"
             - name: SPRING_DATASOURCE_USERNAME
-              valueFrom:
-                configMapKeyRef:
-                  name: mysql-config
-                  key: MYSQL_USER
+              value: "root"
             - name: SPRING_DATASOURCE_PASSWORD
               valueFrom:
                 secretKeyRef:

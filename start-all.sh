@@ -237,10 +237,10 @@ if [ "$CLEAN_FIRST" = true ]; then
     echo ""
     echo "🧹 PASO 0: Limpiando recursos existentes..."
     
-    kubectl delete namespace distribuidas --ignore-not-found=true
+    kubectl delete namespace distribuidas-conjunta --ignore-not-found=true
     
     echo "Esperando a que el namespace se elimine completamente..."
-    while kubectl get namespace distribuidas > /dev/null 2>&1; do
+    while kubectl get namespace distribuidas-conjunta > /dev/null 2>&1; do
         sleep 2
     done
     
@@ -285,7 +285,7 @@ if [ "$DEPLOY_SERVICES" = true ]; then
     
     # Esperar a que todos los pods estén listos
     echo "Esperando que todos los servicios estén listos..."
-    kubectl wait --for=condition=available --timeout=300s deployment --all -n distribuidas
+    kubectl wait --for=condition=available --timeout=300s deployment --all -n distribuidas-conjunta
     
     # Verificar estado de Ingress Controller
     echo "Verificando Ingress Controller..."
@@ -303,7 +303,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: api-gateway-ingress
-  namespace: distribuidas
+  namespace: distribuidas-conjunta
   annotations:
     nginx.ingress.kubernetes.io/cors-allow-origin: "*"
     nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
@@ -356,7 +356,7 @@ EOF
     # Verificar que el Ingress tenga IP
     echo "Verificando Ingress..."
     for i in {1..30}; do
-        INGRESS_IP=$(kubectl get ingress api-gateway-ingress -n distribuidas -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || echo "")
+        INGRESS_IP=$(kubectl get ingress api-gateway-ingress -n distribuidas-conjunta -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || echo "")
         if [ -n "$INGRESS_IP" ]; then
             echo "Ingress configurado con IP: $INGRESS_IP"
             break
@@ -368,10 +368,10 @@ EOF
     
     echo ""
     echo "📱 Comandos útiles:"
-    echo "   Ver pods:          kubectl get pods -n distribuidas"
-    echo "   Ver servicios:     kubectl get services -n distribuidas"
-    echo "   Ver ingress:       kubectl get ingress -n distribuidas"
-    echo "   Ver logs:          kubectl logs -f deployment/<service> -n distribuidas"
+    echo "   Ver pods:          kubectl get pods -n distribuidas-conjunta"
+    echo "   Ver servicios:     kubectl get services -n distribuidas-conjunta"
+    echo "   Ver ingress:       kubectl get ingress -n distribuidas-conjunta"
+    echo "   Ver logs:          kubectl logs -f deployment/<service> -n distribuidas-conjunta"
     echo "   Abrir dashboard:   minikube dashboard"
     echo "   Parar túnel:       pkill -f 'minikube tunnel'"
     echo ""
@@ -399,8 +399,8 @@ EOF
     echo "   $0 --dashboard"
     echo ""
     echo "🛠️  Para troubleshooting:"
-    echo "   kubectl describe pod <pod-name> -n distribuidas"
-    echo "   kubectl get events -n distribuidas --sort-by='.lastTimestamp'"
+    echo "   kubectl describe pod <pod-name> -n distribuidas-conjunta"
+    echo "   kubectl get events -n distribuidas-conjunta --sort-by='.lastTimestamp'"
 
         sleep 2
     done

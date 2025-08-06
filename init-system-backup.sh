@@ -1,7 +1,21 @@
 #!/bin/bash
 
 # Script de inicialización completa del sistema distribuido
-# Este script construye las imágenes Docker, despliega todo en Kubernetes y abre el dashboard
+# Este script construye las imágenes Docker, despliega t# Verificar contexto de Kubernetes
+echo "🔍 Verificando contexto de Kubernetes..."
+CURRENT_CONTEXT=$(kubectl config current-context)
+echo "📋 Contexto actual: $CURRENT_CONTEXT"
+echo "📋 Minikube IP: $(minikube ip)"
+
+# Abrir dashboard primero si se solicita
+if [ "$OPEN_DASHBOARD_FIRST" = true ]; then
+    echo "🚀 Abriendo dashboard para monitoreo..."
+    echo "💡 El dashboard se abrirá en tu navegador para que puedas ver el progreso"
+    nohup minikube dashboard > /dev/null 2>&1 &
+    sleep 3
+    echo "✅ Dashboard abierto - puedes monitorear el progreso desde ahí"
+    echo ""
+fin Kubernetes y abre el dashboard
 
 set -e  # Salir si cualquier comando falla
 
@@ -68,7 +82,7 @@ MINIKUBE_STATUS=$(minikube status --format='{{.Host}}' 2>/dev/null || echo "Stop
 
 if [ "$MINIKUBE_STATUS" != "Running" ]; then
     echo "🚀 Iniciando Minikube (esto puede tomar unos minutos)..."
-    echo "💻 Configuración: 7GB RAM, 4 CPUs, 30GB disco"
+    echo "� Configuración: 7GB RAM, 4 CPUs, 30GB disco"
     
     # Limpiar cualquier estado corrupto antes de iniciar
     echo "🧹 Limpiando estado previo de Minikube..."
@@ -131,20 +145,10 @@ echo "🐳 Configurando Docker para Minikube..."
 eval $(minikube docker-env)
 
 # Verificar contexto de Kubernetes
-echo "🔍 Verificando contexto de Kubernetes..."
+echo "�🔍 Verificando contexto de Kubernetes..."
 CURRENT_CONTEXT=$(kubectl config current-context)
 echo "📋 Contexto actual: $CURRENT_CONTEXT"
 echo "📋 Minikube IP: $(minikube ip)"
-
-# Abrir dashboard primero si se solicita
-if [ "$OPEN_DASHBOARD_FIRST" = true ]; then
-    echo "🚀 Abriendo dashboard para monitoreo..."
-    echo "💡 El dashboard se abrirá en tu navegador para que puedas ver el progreso"
-    nohup minikube dashboard > /dev/null 2>&1 &
-    sleep 3
-    echo "✅ Dashboard abierto - puedes monitorear el progreso desde ahí"
-    echo ""
-fi
 
 # Función para construir una imagen Docker (con cache inteligente)
 build_service() {
@@ -291,7 +295,7 @@ pkill -f "minikube tunnel" 2>/dev/null || true
 sleep 2
 
 # Configurar túnel de Minikube en segundo plano
-echo "🚇 Iniciando túnel de Minikube..."
+echo "� Iniciando túnel de Minikube..."
 echo "💡 Se necesitan permisos de administrador para el túnel"
 nohup minikube tunnel > /tmp/minikube-tunnel.log 2>&1 &
 TUNNEL_PID=$!
@@ -360,8 +364,8 @@ else
 fi
 echo ""
 echo "🔧 Comandos útiles:"
-echo "  📊 Ver dashboard:         minikube dashboard"
-echo "  📋 Ver pods:              kubectl get pods -n distribuidas-conjunta"
+echo "  � Ver dashboard:         minikube dashboard"
+echo "  �📋 Ver pods:              kubectl get pods -n distribuidas-conjunta"
 echo "  📋 Ver servicios:         kubectl get services -n distribuidas-conjunta"
 echo "  📋 Ver ingress:           kubectl get ingress -n distribuidas-conjunta"
 echo "  📋 Ver logs (billing):    kubectl logs -f deployment/billing -n distribuidas-conjunta"

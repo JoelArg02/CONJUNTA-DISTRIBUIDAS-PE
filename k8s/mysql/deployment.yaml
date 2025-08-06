@@ -27,16 +27,6 @@ spec:
                 configMapKeyRef:
                   name: mysql-config
                   key: MYSQL_DATABASE
-            - name: MYSQL_USER
-              valueFrom:
-                configMapKeyRef:
-                  name: mysql-config
-                  key: MYSQL_USER
-            - name: MYSQL_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: mysql-secret
-                  key: MYSQL_PASSWORD
           ports:
             - containerPort: 3306
           volumeMounts:
